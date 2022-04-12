@@ -1,0 +1,189 @@
+My docker account: flyinpenguin 
+
+ 
+
+ 
+
+enable Ubuntu DNS server 
+
+root@k8s0:/home/joan# cat /etc/systemd/resolved.conf 
+
+[Resolve] 
+
+DNS=20.100.10.7 
+
+root@k8s0:/home/joan# systemctl restart systemd-resolved 
+
+root@k8s0:/home/joan# systemctl enable systemd-resolved 
+
+ 
+
+ install k8s 
+
+Install dock.io 
+
+root@k8s0:/home/joan# apt update 
+
+root@k8s0:/home/joan# apt install docker.io 
+
+Set cgroup to systemd for resouce management 
+
+root@k8s0:/home/joan# vi /etc/docker/daemon.json 
+
+{ 
+
+  "exec-opts": ["native.cgroupdriver=systemd"], 
+
+  "insecure-registries" : ["127.0.0.1:5047"] 
+
+} 
+
+ 
+
+root@k8s0:/home/joan# systemctl daemon-reload 
+
+root@k8s0:/home/joan# systemctl restart docker 
+
+Enable br netfilter 
+
+root@k8s0:/home/joan# cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf 
+
+> br_netfilter 
+
+> EOF 
+
+root@k8s0:/home/joan# cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf 
+
+> net.bridge.bridge-nf-call-ip6tables = 1 
+
+> net.bridge.bridge-nf-call-iptables = 1 
+
+> EOF 
+
+root@k8s0:/home/joan# sudo sysctl --system 
+
+Add key to get kubexxx 
+
+root@k8s0:/home/joan# sudo apt-get install -y apt-transport-https ca-certificates curl 
+
+root@k8s0:/home/joan# sudo curl -k -fsSL https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key add - 
+
+OK 
+
+root@k8s0:/home/joan# sudo apt-get install -y kubelet kubeadm kubectl 
+
+ 
+
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl 
+
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list 
+
+sudo apt-get update 
+
+sudo apt-get install -y kubelet kubeadm kubectl 
+
+sudo apt-mark hold kubelet kubeadm kubectl 
+
+root@k8s0:/home/joan# vi /etc/apt/sources.list.d/kubernetes.list 
+
+Swapoff 
+
+root@k8snode0:/home/joan# swapoff -a 
+
+root@k8snode0:/home/joan# cat /etc/hosts 
+
+20.12.37.47 k8snode0 
+
+Kubadmin init 
+
+root@k8s0:/home/joan# kubeadm init  --kubernetes-version v1.23.4  --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=20.12.37.47 -v 9 
+
+  mkdir -p $HOME/.kube 
+
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config 
+
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config 
+
+Coredns not running since CNI not ready 
+
+root@k8s0:/home/joan# ks get pods 
+
+NAME                               READY   STATUS    RESTARTS   AGE 
+
+coredns-64897985d-ll9r9            0/1     Pending   0          2m19s 
+
+coredns-64897985d-tb8qd            0/1     Pending   0          2m19s 
+
+etcd-k8snode0                      1/1     Running   1          2m35s 
+
+kube-apiserver-k8snode0            1/1     Running   1          2m35s 
+
+kube-controller-manager-k8snode0   1/1     Running   1          2m32s 
+
+kube-proxy-vmhqx                   1/1     Running   0          2m20s 
+
+kube-scheduler-k8snode0            1/1     Running   1          2m32s 
+
+Taint master 
+
+root@k8s0:/home/joan# kubectl taint nodes --all node-role.kubernetes.io/master- 
+
+Install callisto CNI 
+
+root@k8s0:/home/joan# curl -k  https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml -o tigera-operator.yaml 
+
+root@k8s0:/home/joan# kubectl create -f tigera-operator.yaml 
+
+root@k8s0:/home/joan# curl -k https://docs.projectcalico.org/manifests/custom-resources.yaml -o custom-resources.yaml 
+
+root@k8s0:/home/joan# kubectl create -f custom-resources.yaml 
+
+ Callisto not running 
+
+root@k8s0:/home/joan# kubectl get pods -n calico-system 
+
+NAME                                       READY   STATUS                  RESTARTS   AGE 
+
+calico-kube-controllers-67f85d7449-z6pzt   0/1     Pending                 0          22m 
+
+calico-node-7b6xb                          0/1     Init:ImagePullBackOff   0          22m 
+
+calico-typha-68585ff884-5n74x              0/1     ImagePullBackOff        0          22m 
+
+Add dock-ce key 
+
+root@k8s0:/home/joan# curl -k -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add - 
+
+OK 
+
+Calliso OK 
+
+^Croot@k8s0:/home/joan# kubectl -n calico-system get pods 
+
+NAME                                       READY   STATUS    RESTARTS   AGE 
+
+calico-kube-controllers-67f85d7449-z6pzt   1/1     Running   0          42m 
+
+calico-node-7b6xb                          1/1     Running   0          42m 
+
+calico-typha-68585ff884-5n74x              1/1     Running   0          42m 
+
+Coredns OK 
+
+root@k8s0:/home/joan# ks get pods 
+
+NAME                               READY   STATUS    RESTARTS   AGE 
+
+coredns-64897985d-ll9r9            1/1     Running   0          54m 
+
+coredns-64897985d-tb8qd            1/1     Running   0          54m 
+
+etcd-k8snode0                      1/1     Running   1          54m 
+
+kube-apiserver-k8snode0            1/1     Running   1          54m 
+
+kube-controller-manager-k8snode0   1/1     Running   1          54m 
+
+kube-proxy-vmhqx                   1/1     Running   0          54m 
+
+kube-scheduler-k8snode0            1/1     Running   1          54m 
