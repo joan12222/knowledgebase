@@ -1,0 +1,172 @@
+FYI 
+
+ 
+
+https://github.com/login?client_id=f252166dc176d078abac&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3Df252166dc176d078abac%26redirect_uri%3Dhttps%253A%252F%252Fruby-china.org%252Faccount%252Fauth%252Fgithub%252Fcallback%26response_type%3Dcode%26scope%3Duser%253Aemail%26state%3D61333b2e2a0a33957cfe68db98d34a04ef328f0fa63284f6 
+
+ 
+
+https://github.com/login 
+
+client_id=f252166dc176d078abac&   
+
+return_to=/login/oauth/authorize? 
+
+client_id=f252166dc176d078abac& 在Authorization Server上注册后得到的唯一标识 
+
+redirect_uri=https://ruby-china.org/account/auth/github/callback&  通过客户端注册的重定向URI 
+
+response_type=code&   表示这是一个授权码请求 
+
+scope=user:email&   用来标识可以访问什么资源，相当于确定该token的权限 
+
+state=61333b2e2a0a33957cfe68db98d34a04ef328f0fa63284f6 
+
+ 
+
++  URL 中+号表示空格 %2B  
+
+空格 URL中的空格可以用+号或者编码 %20  
+
+/  分隔目录和子目录 %2F   
+
+ ?  分隔实际的 URL 和参数 %3F   
+
+% 指定特殊字符 %25   
+
+# 表示书签 %23   
+
+& URL 中指定的参数间的分隔符 %26   
+
+= URL 中指定参数的值 %3D  
+
+ 
+
+Resource Owner(User) 
+
+Client(ruby china) 
+
+User_Agent() 
+
+Resource Server/Owner(github) 
+
+Resource Authorization Server(github) 
+
+ 
+
+授权码模式: Authorization code 
+
+Step B is important: 授权 
+
+Client 
+Authorization Request —> 
+Authorization Grant 
+Authorization Grant 
+— Access Token — 
+Access Token 
+— Protected Resource 
+Figure l: Abstract protocol 
+Resource 
+Authorization 
+Server 
++---Æ- 
+Resource 
+Server 
+A: 访问如上URL 
+
+B: github发送一个请求到redirect_url(ruby china,client), 参数是code, state等 
+
+C: Ruby china后台通过code+client_id+client_secret获取access token 
+
+D: github返回access token 
+
+ 
+
+简化模式：Implicit grant 
+
+A: 访问如上URL 
+
+B: github发送一个请求到redirect_url(ruby china,client), 参数直接是access token 
+
+ 
+
+Resource 
+Client Identifier 
+- Redirection URI - 
+— Uger authenticates 
+URI 
+with Access Token 
+in Fragment 
+- Redirection URI 
+without Fragment 
+— Script 
+(implicit 
+Authorization 
+S e Ever 
+neb-Fosted 
+Reg 00 
+(G) Iccess Token 
+Figure 4: 
+Implicit Grant Flow 
+ 
+
+密码模式：Resource owner password credentials grant 
+
+貌似ruby china是这种方式！！！和youtube里演示不一样 
+
+ 
+
+ 
+
+Resource 
+Owner 
+(Resource Owner Password 
+Credentials Grant) 
+Resource Owner 
+(A) Password Credentials 
+— Resource Owner > I 
+Password Credentials 
+— Access Token 
+Authorization 
+Server 
+(w/ Optional Refresh Token) 
+Figure 5: Resource Owner password Credentials Plow 
+ 
+
+客户端模式：client_credentials 
+
+SmartNIC是这种方式？？？ 
+
+ 
+
+ 
+
+ 
+
+不通过user, 而通过client(ruby china)实现 
+
+(Client Credentials Grant) 
+Client Authentication - 
+— Access Token — 
+-->l Authorization 
+Server 
+Figure 6: Client Credentials Flow 
+ 
+
+http:mocalhost:8080/oauth/token?grant_type=client_credentials 
+1. client_credentials 
+Params 
+Authorization • 
+'eaders (1) 
+O Heads up! These parameters hold sensitive data, To keep this data secure while working in a collaborative environmen 
+2. 
+Basic Auth • 
+The authorization header WAI be automatically generated 
+when you send the request [earn more ahout authoriration 
+more about variables 
+IJsername 
+Password 
+biezhi 
+3. ClientDetail 
+Show password 
+ 
